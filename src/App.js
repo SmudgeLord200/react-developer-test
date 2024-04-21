@@ -1,9 +1,19 @@
 import logo from "./logo.svg";
 import "./App.css";
 import { useEffect, useState } from "react";
+import {
+  Button,
+  Container,
+  List,
+  ListItemButton,
+  ListItemText,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 function App() {
-  const [search, setSearch] = useState(null);
+  const [search, setSearch] = useState("");
   const [resultAudio, setResultAudio] = useState([]);
   const [showAudio, setShowAudio] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,7 +40,7 @@ function App() {
   }, [search]);
 
   const onHandleEnterPressed = async (key) => {
-    if (key.key === "Enter") {
+    if (key.key === "Enter" && search != "") {
       // console.log("ENTERRRRRR");
       try {
         const response = await fetch(
@@ -90,52 +100,70 @@ function App() {
 
   return (
     <div className="App">
-      <input
-        type="search"
-        id="search"
-        name="search"
-        onChange={(e) => setSearch(e.target.value)}
-        onKeyDown={onHandleEnterPressed}
-        disabled={isPlaying}
-      />
-      {resultAudio.length != 0 && (
-        <>
-          <ul>
-            {currentPageData &&
-              currentPageData.map((r, index) => (
-                <li key={index} onClick={() => onClickPlay(r)}>
-                  {r.name}
-                </li>
-              ))}
-          </ul>
-          <button
-            onClick={goToPreviousPage}
-            disabled={isPlaying || currentPage === 1}
+      <Container maxWidth="md" sx={{ p: 3 }}>
+        <TextField
+          id="search"
+          label="Search for sounds"
+          variant="outlined"
+          required
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={onHandleEnterPressed}
+          disabled={isPlaying}
+          fullWidth
+        />
+
+        {resultAudio.length != 0 && (
+          <>
+            <List>
+              {currentPageData &&
+                currentPageData.map((r, index) => (
+                  <ListItemButton key={index} onClick={() => onClickPlay(r)}>
+                    <ListItemText primary={r.name} />
+                  </ListItemButton>
+                ))}
+            </List>
+            <Stack spacing={2} direction="row" justifyContent={"space-around"}>
+              <Button
+                variant="outlined"
+                onClick={goToPreviousPage}
+                disabled={isPlaying || currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={goToNextPage}
+                disabled={
+                  isPlaying ||
+                  currentPage === Math.ceil(resultAudio.length / itemsPerPage)
+                }
+              >
+                Next
+              </Button>
+            </Stack>
+          </>
+        )}
+        {showAudio && (
+          <Stack
+            spacing={2}
+            direction="column"
+            justifyContent={"center"}
+            alignItems={"center"}
+            mt={2}
           >
-            Previous
-          </button>
-          <button
-            onClick={goToNextPage}
-            disabled={
-              isPlaying ||
-              currentPage === Math.ceil(resultAudio.length / itemsPerPage)
-            }
-          >
-            Next
-          </button>
-        </>
-      )}
-      {showAudio && (
-        <>
-          <p>Now Playing: {play.name}</p>
-          <audio
-            controls
-            src={play.audio}
-            onPlay={handleAudioPlay}
-            onPause={handleAudioPause}
-          ></audio>
-        </>
-      )}
+            <Typography variant="subtitle1">
+              Now Playing: {play.name}
+            </Typography>
+            <audio
+              controls
+              src={play.audio}
+              onPlay={handleAudioPlay}
+              onPause={handleAudioPause}
+            ></audio>
+          </Stack>
+        )}
+      </Container>
     </div>
   );
 }
